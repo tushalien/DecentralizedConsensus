@@ -1,1 +1,31 @@
-<h1> Hello World </h1>
+<html>
+<head>
+</head>
+<body onload="getUsers();return false;">
+
+<h1> User Register</h1>
+<form onsubmit="registerUser();return false;">
+  Email:<br>
+  <input type="text" id="email" name="email">
+  <br>
+  Role:<br>
+  <select id="role">
+	<option value="0">Web Developer</option>
+    <option value="1">UI Designer</option>
+    <option value="2">SEO Specialist </option>
+  </select>
+  <br><br>
+  <input type="submit" value="Submit">
+</form> 
+
+<br>
+<h1> Users Registered </h1>
+<div class="users">
+</div>
+</body>
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+<script src="app.js"></script>
+
+</html>

@@ -14,4 +14,6 @@ var server = app.listen(app.get('port'), function() {
 // Home page route.
 router.get('/', function (req, res) {
   res.render('index.html');
+router.get('/project', function (req, res) {
+  res.render('project.html');
 })

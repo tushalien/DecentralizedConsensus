@@ -42,6 +42,7 @@
     "url-loader": "^1.0.1"
   },
   "dependencies": {
+    "bignumber.js": "^6.0.0",
     "truffle-hdwallet-provider": "0.0.3"
   },
   "repository": {
