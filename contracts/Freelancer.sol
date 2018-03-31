@@ -23,6 +23,8 @@ contract Freelancer {
 
     mapping (address => User[]) userinfo;  // one's public address to his details mapping
     mapping (uint => Project[]) projectinfo;  // id to project mapping
+    mapping(address => uint) deposits;
+
 
     Project[] projects;
     User[] users;
@@ -108,5 +110,38 @@ contract Freelancer {
         projectinfo[id][0].status = 1;
     }
 
+    function sendEtherToContract() public payable { 
+        deposits[msg.sender] = msg.value;
+
+    }
+
+
+        mapping (address => uint256) public balances;
+
+    event LogDeposit(address sender, uint amount);
+    event LogWithdrawal(address receiver, uint amount);
+    event LogTransfer(address sender, address to, uint amount);
+
+    function deposit() payable returns(bool success) {
+        balances[msg.sender] += msg.value;
+        LogDeposit(msg.sender, msg.value);
+        return true;
+    }
+
+    function withdraw(uint value) payable returns(bool success) {
+        if(balances[msg.sender] < value) throw;
+        balances[msg.sender] -= value;
+        msg.sender.transfer(value);
+        LogWithdrawal(msg.sender, value);
+        return true;
+    }
+
+    function transfer(address to, uint value) returns(bool success) {
+        if(balances[msg.sender] < value) throw;
+        balances[msg.sender] -= value;
+        to.transfer(value);
+        LogTransfer(msg.sender, to, value);
+        return true;
+    }
 
 }   
