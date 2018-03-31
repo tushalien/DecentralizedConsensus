@@ -67,9 +67,9 @@ contract Freelancer {
 
     function postProject(uint cost, bytes32 desc, bytes32 document) public payable {
         Project memory project ;
-        project.id = ++id;
+        project.id = 1;
         project.client = msg.sender;
-        project.freelancer = address(0);
+        project.freelancer = msg.sender;
         project.cost = cost;
         project.desc = desc;
         project.document = document;
