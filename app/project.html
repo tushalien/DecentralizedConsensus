@@ -1,0 +1,31 @@
+<html>
+<head>
+</head>
+<body onload="getProjects();return false;">
+
+<h1> Post a Project</h1>
+<form onsubmit="postProject();return false;">
+  Project Desc:<br>
+  <input type="text" id="desc" name="desc">
+  <br>
+  Project Documnet(Terms and Conditions - Taking text for now):<br>
+  <input type="text" id="doc" name="doc">
+  <br>
+  Project Cost:<br>
+  <input type="text" id="cost" name="cost">
+  <br>
+  <br><br>
+  <input type="submit" value="Submit">
+</form> 
+
+<br>
+<h1> Projects Available</h1>
+<div class="projects">
+</div>
+</body>
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+<script src="app.js"></script>
+
+</html>
