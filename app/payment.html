@@ -1,0 +1,47 @@
+<html>
+<head>
+</head>
+
+<h1> Send Ether</h1>
+<form onsubmit="deposit();return false;">
+  Ethers:<br>
+  <input type="text" id="sendether" name="sendether" value="0.1">
+  <br>
+  <input type="submit" value="Submit">
+</form> 
+
+<h1> Send Token</h1>
+<form onsubmit="sendTokenToContract();return false;">
+  Tokens:<br>
+  <input type="text" id="sendtoken" name="sendtoken" value="10">
+  <br>
+  <input type="submit" value="Submit">
+</form> 
+
+
+<h1> Recieve Ether</h1>
+<form onsubmit="withdraw();return false;">
+  Ethers:<br>
+  <input type="text" id="recieveether" name="recieveether" value="0.1">
+  <br>
+  <input type="submit" value="Submit">
+</form> 
+
+
+
+<h1> Recieve Token</h1>
+<form onsubmit="sendTokenToAddress();return false;">
+  Ethers:<br>
+  <input type="text" id="recievetoken" name="recievetoken" value="10">
+  <br>
+  <input type="submit" value="Submit">
+</form> 
+
+
+</body>
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+<script src="app.js"></script>
+
+</html>
