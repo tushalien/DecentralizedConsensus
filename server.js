@@ -16,4 +16,6 @@ router.get('/', function (req, res) {
   res.render('index.html');
 router.get('/project', function (req, res) {
   res.render('project.html');
+router.get('/payment', function (req, res) {
+  res.render('payment.html');
 })
