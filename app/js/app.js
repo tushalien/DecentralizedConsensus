@@ -98,6 +98,42 @@ window.getProjects = function(){
 }
 
 
+/////     Experimemntal Features :P //////////////////////////
+
+window.deposit = function(form) {
+  let ether = $('#sendether').val();
+
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.deposit({gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "ether")})
+    .then(function(){
+      console.log("Ether Deposited");
+    })
+    .catch(function(){
+      console.log("Ether not Deposited");
+    })
+  })
+}
+
+
+window.withdraw = function(form) {
+  let ether = $('#recieveether').val();
+  ether =100000000000000000; //convert into wei
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.withdraw(ether,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Ether Withdrawl");
+    })
+    .catch(function(){
+      console.log("Ether not Withdrawl");
+    })
+  })
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////
 
 
 
