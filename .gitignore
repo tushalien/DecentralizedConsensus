@@ -1,5 +1,9 @@
 # Logs
 logs
+
+### TRuffle.js contaisn private mnemonic key 
+truffle.js
+
 build
 *.log
 npm-debug.log*
