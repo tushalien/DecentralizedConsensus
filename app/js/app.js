@@ -92,6 +92,7 @@ window.getProjects = function(){
       }
           projects[i]=obj;
         }
+        
         console.log(projects);
   })
     })
