@@ -1,7 +1,26 @@
 pragma solidity ^0.4.18;
 pragma experimental ABIEncoderV2;
 
-contract Freelancer {
+
+contract ERC20Events {
+    event Approval(address indexed src, address indexed guy, uint wad);
+    event Transfer(address indexed src, address indexed dst, uint wad);
+}
+
+contract ERC20 is ERC20Events {
+    function totalSupply() public view returns (uint);
+    function balanceOf(address guy) public view returns (uint);
+    function allowance(address src, address guy) public view returns (uint);
+
+    function approve(address guy, uint wad) public returns (bool);
+    function transfer(address dst, uint wad) public returns (bool);
+    function transferFrom(
+        address src, address dst, uint wad
+    ) public returns (bool);
+}
+
+
+contract Freelancer is ERC20 {
 
     uint id =0;
     struct User {
@@ -116,7 +135,15 @@ contract Freelancer {
     }
 
 
-        mapping (address => uint256) public balances;
+    //b > a
+    function getRandom(uint a, uint b) returns (uint)
+    {
+        uint random_number = (uint(block.blockhash(block.number-1))%b + 1) - (uint(block.blockhash(block.number-1))%a + 1);
+        return random_number;
+    }
+
+
+    mapping (address => uint256) public balances;
 
     event LogDeposit(address sender, uint amount);
     event LogWithdrawal(address receiver, uint amount);
@@ -142,6 +169,16 @@ contract Freelancer {
         to.transfer(value);
         LogTransfer(msg.sender, to, value);
         return true;
+    }
+
+    function sendTokens(address src, address dst, uint val) public 
+    { 
+        address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
+        ERC20 token = ERC20(_tokenAddress);
+        //require(token.balanceOf(msg.sender) >= 100); 
+        token.transferFrom(src, dst, val);
+        //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
+
     }
 
 }   
