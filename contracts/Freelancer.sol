@@ -22,6 +22,18 @@ contract ERC20 is ERC20Events {
 
 contract Freelancer is ERC20 {
 
+    function Freelancer()
+    {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner()
+    {
+        require(msg.sender == owner);
+        _;
+
+    }
+
     uint id =0;
     struct User {
         address addr;
@@ -40,10 +52,21 @@ contract Freelancer is ERC20 {
       //  bytes32 time;
     }
 
+    struct  Jury {
+        address addr;
+        uint id;
+        uint stake_tokens;
+        uint vote; // 0- > NOt voted, 1-> TRue, 2-> False
+        bytes32 hash;
+        bytes32 salt;
+    }
+    
+
     mapping (address => User[]) userinfo;  // one's public address to his details mapping
     mapping (uint => Project[]) projectinfo;  // id to project mapping
     mapping(address => uint) deposits;
-
+    mapping (uint => Jury[]) jurylist;
+    
 
     Project[] projects;
     User[] users;
@@ -129,11 +152,24 @@ contract Freelancer is ERC20 {
         projectinfo[id][0].status = 1;
     }
 
-    function sendEtherToContract() public payable { 
-        deposits[msg.sender] = msg.value;
+    function closeProject(uint id ) public {
+        //projectinfo[id][0].freelancer = msg.sender;
+        projectinfo[id][0].status = 3;
+    }
+
+    function disputeProject(uint id ) public payable {
+        projectinfo[id][0].status = 2;
 
     }
 
+    function applyForJury(uint id , uint value, bytes32 hash) public payable {
+        jurylist[id][0].addr = msg.sender;
+        sendTokens(msg.sender, this, value);
+        jurylist[id][0].stake_tokens = value;
+        jurylist[id][0].hash = hash;
+    }
+
+    function selectJury
 
     //b > a
     function getRandom(uint a, uint b) returns (uint)
@@ -178,7 +214,6 @@ contract Freelancer is ERC20 {
         //require(token.balanceOf(msg.sender) >= 100); 
         token.transferFrom(src, dst, val);
         //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
-
     }
 
 }   
