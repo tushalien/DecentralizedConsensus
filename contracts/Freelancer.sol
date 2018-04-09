@@ -24,8 +24,7 @@ contract Freelancer  {
     
     address owner;
 
-    function Freelancer ()
-    {
+    function Freelancer() public{
         owner = msg.sender;
     }
 
@@ -42,9 +41,9 @@ contract Freelancer  {
         return uint(keccak256(number + salt));
     }
 
-    function getRandom(uint a, uint b) public view returns (uint)  // b > a 
+    function getRandom(uint b) public view returns (uint)  // b > a 
     {
-        uint random_number = (uint(block.blockhash(block.number-1))%b + 1) - (uint(block.blockhash(block.number-1))%a + 1);
+        uint random_number = (uint(block.blockhash(block.number-1))%b + 1);
         return random_number;
     }
 
@@ -122,6 +121,7 @@ contract Freelancer  {
         bytes32 document;
         uint status; //0-> Open 1-> Undertaken 2-> in Dispute 3->closed
         address[] juries;
+        address[] applied;
       //  bytes32 time;
     }
 
@@ -170,7 +170,7 @@ contract Freelancer  {
         return(email);
     }
 
-    function postProject(uint cost, bytes32 desc, bytes32 document, uint deposit) public payable returns (bool) {
+    function postProject(uint cost, bytes32 desc, bytes32 document) public payable returns (bool) {
         Project memory project ;
         project.id = 1;
         project.client = msg.sender;
@@ -244,25 +244,41 @@ contract Freelancer  {
         //uint counter;
        // counter = projectinfo[id].juries.length;
         sendTokens(msg.sender, this , value);
-        projectinfo[id].juries.push(msg.sender);
+        projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
-    //     // uint counter; 
-    //     // uint jury_id;
-    //     // counter = projectinfo[id][0].jury + 1;
-    //     // projectinfo[id][0].jury = counter;
-    //     // jury_id = counter -  1;
-    //     // jurylist[id][jury_id].addr = msg.sender;
-    //     // sendTokens(msg.sender, this, value);
-    //     // jurylist[id][jury_id].stake_tokens = value;
+
      }
 
     function selectJury(uint id) onlyOwner public returns (bool)
     {
+        uint[] memory range = new uint[](projectinfo[id].applied.length);
+        uint[] memory randompool = new uint[](projectinfo[id].applied.length);
+        address[] memory jury = new address[](projectinfo[id].applied.length);
+        for(uint i=0;i<projectinfo[id].applied.length;i++){
+            jury[i] = projectinfo[id].applied[i];
+        }
+
+        range[0] =0 ;
+        for(uint x=0;x<projectinfo[id].applied.length;x++){
+            range[x] += juryinfo[jury[x]].stake_tokens;
+        }
+        for(uint a=0;a<projectinfo[id].applied.length;a++){
+            randompool[a] = getRandom(range[(projectinfo[id].applied.length)-1]);
+        }
+        uint y=0;
+        for(uint b=0;b<projectinfo[id].applied.length && y < 5;b++){
+            if ( randompool[y] < range[b])
+            {
+                projectinfo[id].juries.push(juryinfo[jury[b]].addr);
+            }
+            y++;
+        }
+
         //needs some thoughtful thinking :P
         return true;
     }
 
-    function vote ( uint id, uint hash) public {
+    function voteJury ( uint id, uint hash) public {
         require(juryinfo[msg.sender].id == id); 
         juryinfo[msg.sender].hash = hash;
 
@@ -336,9 +352,5 @@ contract Freelancer  {
             }
 
         }
-
-
-
     }
-
 }   
