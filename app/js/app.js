@@ -76,7 +76,7 @@ window.postProject = function(form) {
   let cost = $('#cost').val();
 
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.postProject(cost,desc,doc,{gas: 1400000, from: web3.eth.accounts[0]})
+    contractInstance.postProject(cost,desc,doc,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "ether")})
     .then(function(){
       console.log("Project Posted");
     })
