@@ -35,10 +35,10 @@ contract Freelancer  {
     }
 
 
-
-    function generateHash(uint number, uint salt) public pure returns (uint) 
+ 
+   function generateHash(uint number, uint salt) public pure returns (bytes32) 
     {
-        return uint(keccak256(number + salt));
+        return (keccak256(number + salt));
     }
 
     function getRandom(uint b) public view returns (uint)  // b > a 
@@ -82,6 +82,7 @@ contract Freelancer  {
         address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
         ERC20 token = ERC20(_tokenAddress);
         require(token.balanceOf(msg.sender) >= 100); 
+        val = val*1000000000;
         token.transferFrom(src, dst, val);
         //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
     }
@@ -107,7 +108,7 @@ contract Freelancer  {
         address addr;
         uint stake_tokens;
         uint vote; // 0- > NOt voted, 1-> TRue, 2-> False
-        uint hash;
+        bytes32 hash;
         uint salt;
     }
     //Jury[] juries;
@@ -190,7 +191,9 @@ contract Freelancer  {
     function getProjects() public constant returns (uint[],bytes32[],uint[], bytes32[], bytes32[], uint[]){
         uint[] memory id = new uint[](projects.length);
         address[] memory addr = new address[](projects.length);
+        address[] memory addr2 = new address[](projects.length);
         bytes32[] memory cli_mail = new bytes32[](projects.length);
+        bytes32[] memory freelancer_mail = new bytes32[](projects.length);
         uint[] memory cost = new uint[](projects.length);
         bytes32[] memory desc = new bytes32[](projects.length);
         bytes32[] memory document = new bytes32[](projects.length);
@@ -201,12 +204,13 @@ contract Freelancer  {
             id[i] = p.id;
             addr[i] = p.client;
             cli_mail[i]= getUserMail(addr[i]);
+            freelancer_mail[i] = getUserMail(addr2[i]);
             cost[i]=p.cost;
             desc[i] = p.desc;
             document[i] = p.document;
             status[i] = p.status;
         }
-        return(id, cli_mail, cost, desc, document, status);
+        return(id, cli_mail, freelancer_mail, cost, desc, document, status);
     }
 
 
@@ -219,10 +223,12 @@ contract Freelancer  {
     }
 
     function closeProject(uint id ) public {
+        require (projectinfo[id].client == msg.sender);
         projectinfo[id].status = 3;
     }
 
-    function disputeProject(uint id ) public payable {
+    function disputeProject(uint id ) public {
+        require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer == msg.sender);
         projectinfo[id].status = 2;
 
     }
@@ -231,18 +237,12 @@ contract Freelancer  {
 
     
     function applyForJury(uint id , uint value) public payable {
-        //Jury[] juries;
-        // juries.push(msg.sender);
-        // juryinvolved[msg.sender]= id;
-        // juriesinaproject[id].push(Jury(id, msg.sender,value, 0,0,0));
         Jury memory j;
         j.addr = msg.sender;
         j.stake_tokens = value;
         j.vote=0; 
         j.hash=0;
         j.salt=0;
-        //uint counter;
-       // counter = projectinfo[id].juries.length;
         sendTokens(msg.sender, this , value);
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
@@ -278,13 +278,13 @@ contract Freelancer  {
         return true;
     }
 
-    function voteJury ( uint id, uint hash) public {
+    function voteJury ( uint id, bytes32 hash) public {
         require(juryinfo[msg.sender].id == id); 
         juryinfo[msg.sender].hash = hash;
 
     }
 
-    function verifyJury(uint id, uint vote, uint salt) public returns(bool)
+    function verifyJury(uint id, uint vote, bytes32 hash) public returns(bool)
     {
         require(juryinfo[msg.sender].id == id);
         require(generateHash(vote, salt) == juryinfo[msg.sender].hash);
