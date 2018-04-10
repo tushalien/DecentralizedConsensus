@@ -1,13 +1,12 @@
 import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
-import bs58 from 'bs58'
-
+import bs58 from 'bs58';
 
 import freelancer_artifacts from '../../build/contracts/Freelancer.json'
-
 var Freelancer = contract(freelancer_artifacts);
-//console.log(Freelancer);
 
+
+// LIbrary - Utility Functions
 
 getBytes32FromIpfsHash(ipfsListing) {
   return "0x"+bs58.decode(ipfsListing).slice(2).toString('hex')
@@ -17,13 +16,11 @@ getIpfsHashFromBytes32(bytes32Hex) {
   const hashHex = "1220" + bytes32Hex.slice(2)
   const hashBytes = Buffer.from(hashHex, 'hex');
   const hashStr = bs58.encode(hashBytes)
-  return hashStr
+  return hashStr;
 }
 
 
-
-
-
+// Event triggered functions
 
 window.registerUser = function(form) {
   let client = web3.eth.accounts[0];
@@ -43,8 +40,8 @@ window.registerUser = function(form) {
   })
 }
 
-window.getUsers = function(){
 
+window.getUsers = function(){
   let fields = [ 'addr', 'email', 'role'];
   let users = {};
   console.log(Freelancer);
@@ -71,8 +68,11 @@ window.getUsers = function(){
 
 
 window.postProject = function(form) {
+  let ipfshash;
   let desc = $('#desc').val();
-  let doc = $('#doc').val();
+  let doc = $('#doc').val();      //ipfs hash 
+  //ipfs code goes here
+  doc = getBytes32FromIpfsHash(ipfshash)
   let cost = $('#cost').val();
 
   Freelancer.deployed().then(function(contractInstance){
@@ -86,9 +86,9 @@ window.postProject = function(form) {
   })
 }
 
+
 window.getProjects = function(){
-//id, cli_mail, cost, desc, document, status
-  let fields = [ 'id', 'cli_email', 'cost', 'desc', 'document', 'status'];
+  let fields = [ 'id', 'cli_email','freelancer_email', 'cost', 'desc', 'document', 'status'];
   let projects = {};
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.getProjects.call()
@@ -102,8 +102,10 @@ window.getProjects = function(){
           for(let j=0;j<fields.length;j++)
           {
               obj[fields[j]] = res[j][i].toString();
-              if(j==1 || j==3 || j==4 )
-              obj[fields[j]] = web3.toAscii(obj[fields[j]]);
+              if(j==1 || j==2|| j==4 || j==5)
+                obj[fields[j]] = web3.toAscii(obj[fields[j]]);
+              if (j==4)
+                obj[fields[j]] = getIpfsHashFromBytes32(obj[fields[j]]);  // retrieves ipfs hash
       }
           projects[i]=obj;
         }
@@ -111,6 +113,127 @@ window.getProjects = function(){
         console.log(projects);
   })
     })
+}
+
+
+window.acceptProject = function(form) {
+  let id = $('#project_id').val();
+  let ether = parseInt($('#project_cost').val())*0.2;
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "ether")})
+    .then(function(){
+      console.log("Project Accepted");
+    })
+    .catch(function(){
+      console.log("Project not accepted!!");
+    })
+  })
+}
+
+
+window.closeProject = function(form) {
+  let id = $('#project_id').val();
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.closeProject(id,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Project Closed");
+    })
+    .catch(function(){
+      console.log("Project not closed!!");
+    })
+  })
+}
+
+
+window.disputeProject = function(form) {
+  let id = $('#project_id').val();
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.disputeProject(id,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Project Under Dispute");
+    })
+    .catch(function(){
+      console.log("Project noy under Dispute");
+    })
+  })
+}
+
+
+window.applyForJury = function(form) {
+  let id = $('#project_id').val();
+  let tokens = parseInt($('#tokens').val());
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.applyForJury(id,tokens,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Applied for Jury");
+    })
+    .catch(function(){
+      console.log("Application for Jury wasn't success");
+    })
+  })
+}
+
+window.selectJury = function() {
+  let id = $('#project_id').val();
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.selectJury(id,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Jury Selection Done");
+    })
+    .catch(function(){
+      console.log("Jury Selection - Error !!");
+    })
+  })
+}
+
+window.voteJury = function(form) {
+  let id = $('#project_id').val();
+  let vote = $('#vote').val();
+  let salt = $('#salt').val();
+  let hash = web3.sha3(vote.toString()+salt)
+
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.acceptProject(id,hash,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Voting Done");
+    })
+    .catch(function(){
+      console.log("Vote not done");
+    })
+  })
+}
+
+
+window.verifyJury = function(form) {
+  let id = $('#project_id').val();
+  let vote = $('#vote').val();
+  let salt = $('#salt').val();
+  let hash = web3.sha3(vote.toString()+salt)
+
+
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.verifyJury(id,vote,hash,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Jury Verified");
+    })
+    .catch(function(){
+      console.log("Jury not verified");
+    })
+  })
+}
+
+
+window.redistributeFunds = function() {
+  let id = $('#project_id').val();
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.redistributeFunds(id,{gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(){
+      console.log("Funds distributed !!");
+    })
+    .catch(function(){
+      console.log("Redistribution - Error !!");
+    })
+  })
 }
 
 
@@ -146,12 +269,7 @@ window.withdraw = function(form) {
 }
 
 
-
-
-
 ////////////////////////////////////////////////////////////////
-
-
 
 $( document ).ready(function()
  {
