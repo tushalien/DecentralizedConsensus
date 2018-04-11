@@ -1,18 +1,19 @@
 import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
-import bs58 from 'bs58';
+const bs58 = require('bs58');
 
+console.log(bs58.decode("f"));
+console.log("hello");
 import freelancer_artifacts from '../../build/contracts/Freelancer.json'
 var Freelancer = contract(freelancer_artifacts);
-
-
+var ipfshash;
 // LIbrary - Utility Functions
 
-getBytes32FromIpfsHash(ipfsListing) {
-  return "0x"+bs58.decode(ipfsListing).slice(2).toString('hex')
+function getBytes32FromIpfsHash(ipfsListing) {
+  return "0x"+bs58.decode(ipfsListing).slice(2).toString('hex');
 }
 
-getIpfsHashFromBytes32(bytes32Hex) {
+function getIpfsHashFromBytes32(bytes32Hex) {
   const hashHex = "1220" + bytes32Hex.slice(2)
   const hashBytes = Buffer.from(hashHex, 'hex');
   const hashStr = bs58.encode(hashBytes)
@@ -21,6 +22,32 @@ getIpfsHashFromBytes32(bytes32Hex) {
 
 
 // Event triggered functions
+
+
+window.upload = function()
+{
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        const ipfs = window.IpfsApi('localhost', 5001) 
+        const buf = buffer.Buffer(reader.result) // Convert data into buffer
+        ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
+          if(err) {
+            console.error(err)
+            return
+          }
+          let url = `https://ipfs.io/ipfs/${result[0].hash}`
+          console.log(`Url --> ${url}`)
+          console.log(result[0].hash);
+          ipfshash = result[0].hash;
+          ipfshash = getBytes32FromIpfsHash(ipfshash);
+          console.log(ipfshash);
+        })
+      }
+      const doc = document.getElementById("doc");
+      reader.readAsArrayBuffer(doc.files[0]); // Read Provided File
+
+}
+
 
 window.registerUser = function(form) {
   let client = web3.eth.accounts[0];
@@ -68,15 +95,15 @@ window.getUsers = function(){
 
 
 window.postProject = function(form) {
-  let ipfshash;
+ 
   let desc = $('#desc').val();
-  let doc = $('#doc').val();      //ipfs hash 
+  //let doc ;      //ipfs hash 
   //ipfs code goes here
-  doc = getBytes32FromIpfsHash(ipfshash)
+  //doc = getBytes32FromIpfsHash(ipfshash)
   let cost = $('#cost').val();
 
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.postProject(cost,desc,doc,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "ether")})
+    contractInstance.postProject(cost,desc,ipfshash,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "ether")})
     .then(function(){
       console.log("Project Posted");
     })
