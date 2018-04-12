@@ -243,9 +243,6 @@ contract Freelancer  {
         Jury memory j;
         j.addr = msg.sender;
         j.stake_tokens = value;
-        j.vote=0; 
-        j.hash="0x00";
-        j.salt=0;
         sendTokens(msg.sender, this , value);
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
@@ -254,25 +251,26 @@ contract Freelancer  {
 
     function selectJury(uint id) onlyOwner public returns (bool)
     {
-        uint[] memory range = new uint[](projectinfo[id].applied.length);
-        uint[] memory randompool = new uint[](projectinfo[id].applied.length);
-        address[] memory jury = new address[](projectinfo[id].applied.length);
-        for(uint i=0;i<projectinfo[id].applied.length;i++){
-            jury[i] = projectinfo[id].applied[i];
+        Project storage project = projectinfo[id];
+        uint[] memory range = new uint[](project.applied.length);
+        uint[] memory randompool = new uint[](project.applied.length);
+        address[] memory jury = new address[](project.applied.length);
+        for(uint i=0;i<project.applied.length;i++){
+            jury[i] = project.applied[i];
         }
 
         range[0] =0 ;
-        for(uint x=0;x<projectinfo[id].applied.length;x++){
+        for(uint x=0;x<project.applied.length;x++){
             range[x] += juryinfo[jury[x]].stake_tokens;
         }
-        for(uint a=0;a<projectinfo[id].applied.length;a++){
-            randompool[a] = getRandom(range[(projectinfo[id].applied.length)-1]);
+        for(uint a=0;a<project.applied.length;a++){
+            randompool[a] = getRandom(range[(project.applied.length)-1]);
         }
         uint y=0;
-        for(uint b=0;b<projectinfo[id].applied.length && y < 5;b++){
+        for(uint b=0;b<project.applied.length && y < 5;b++){
             if ( randompool[y] < range[b])
             {
-                projectinfo[id].juries.push(juryinfo[jury[b]].addr);
+                project.juries.push(juryinfo[jury[b]].addr);
             }
             y++;
         }
@@ -282,8 +280,9 @@ contract Freelancer  {
     }
 
     function voteJury ( uint id, bytes32 hash) public {
-        require(juryinfo[msg.sender].id == id); 
-        juryinfo[msg.sender].hash = hash;
+        require(juryinfo[msg.sender].id == id);
+        Jury storage jury = juryinfo[msg.sender];
+        jury.hash = hash;
 
     }
 
@@ -291,7 +290,8 @@ contract Freelancer  {
     {
         require(juryinfo[msg.sender].id == id);
         require(hash == juryinfo[msg.sender].hash);
-        juryinfo[msg.sender].vote = vote;
+        Jury storage jury = juryinfo[msg.sender];
+        jury.vote = vote;
         return true;
     }
 
