@@ -23,8 +23,9 @@ contract ERC20 is ERC20Events {
 contract Freelancer  {
     
     address owner;
+    uint project_id;
 
-    function Freelancer() public{
+    function Freelancer() public payable{
         owner = msg.sender;
     }
 
@@ -120,7 +121,7 @@ contract Freelancer  {
         uint cost;
         bytes32 desc; // Basic Small Description of project
         bytes32 document;
-        uint status; //0-> Open 1-> Undertaken 2-> in Dispute 3->closed
+        uint project_status; //0-> Open 1-> Undertaken 2-> in Dispute 3->closed
         address[] juries;
         address[] applied;
       //  bytes32 time;
@@ -139,6 +140,7 @@ contract Freelancer  {
     mapping (address => Jury) juryinfo;
 
     function registerUser(bytes32 email, uint role) public payable {
+        require (userinfo[msg.sender].addr != msg.sender);
         User memory user ;
         user.addr = msg.sender;
         user.email= email;
@@ -173,14 +175,14 @@ contract Freelancer  {
 
     function postProject(uint cost, bytes32 desc, bytes32 document) public payable returns (bool) {
         Project memory project ;
-        project.id = 1;
+        project.id = project_id++;
         project.client = msg.sender;
         project.freelancer = msg.sender;
-        project.cost = cost;
+        project.cost = msg.value;
         project.desc = desc;
         project.document = document;
-        project.status = 0;
-        projectinfo[start_id] = project;
+        project.project_status = 0;
+        projectinfo[project.id] = project;
         balances[msg.sender] += msg.value;
         LogDeposit(msg.sender, msg.value);
         projects.push(project);
@@ -198,14 +200,14 @@ contract Freelancer  {
         uint[] memory status = new uint[](projects.length);
 
         for(uint i=0;i<projects.length;i++){
-            Project storage p = projects[i];
+            Project storage p = projectinfo[i];
             id[i] = p.id;
             addr[i] = p.client;
             cli_mail[i]= getUserMail(addr[i]);
             cost[i]=p.cost;
             desc[i] = p.desc;
             document[i] = p.document;
-            status[i] = p.status;
+            status[i] = p.project_status;
         }
         return(id, cli_mail, cost, desc, document, status);
     }
@@ -213,20 +215,24 @@ contract Freelancer  {
 
 
     function acceptProject(uint id ) public payable {
-        projectinfo[id].freelancer = msg.sender;
-        projectinfo[id].status = 1;
+        Project storage project = projectinfo[id];
+        project.freelancer = msg.sender;
+        project.project_status = 1;
         balances[msg.sender] += msg.value;
         LogDeposit(msg.sender, msg.value);
     }
 
     function closeProject(uint id ) public {
         require (projectinfo[id].client == msg.sender);
-        projectinfo[id].status = 3;
+        Project storage project = projectinfo[id];
+
+        project.project_status = 3;
     }
 
     function disputeProject(uint id ) public {
         require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer == msg.sender);
-        projectinfo[id].status = 2;
+        Project storage project = projectinfo[id];
+        project.project_status = 2;
 
     }
 

@@ -2,11 +2,10 @@ import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
 const bs58 = require('bs58');
 
-console.log(bs58.decode("f"));
-console.log("hello");
+
 import freelancer_artifacts from '../../build/contracts/Freelancer.json'
 var Freelancer = contract(freelancer_artifacts);
-var ipfshash;
+
 // LIbrary - Utility Functions
 
 function getBytes32FromIpfsHash(ipfsListing) {
@@ -14,7 +13,7 @@ function getBytes32FromIpfsHash(ipfsListing) {
 }
 
 function getIpfsHashFromBytes32(bytes32Hex) {
-  const hashHex = "1220" + bytes32Hex.slice(2)
+  const hashHex = "1220" + bytes32Hex.slice(2);
   const hashBytes = Buffer.from(hashHex, 'hex');
   const hashStr = bs58.encode(hashBytes)
   return hashStr;
@@ -24,29 +23,29 @@ function getIpfsHashFromBytes32(bytes32Hex) {
 // Event triggered functions
 
 
-window.upload = function()
-{
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        const ipfs = window.IpfsApi('localhost', 5001) 
-        const buf = buffer.Buffer(reader.result) // Convert data into buffer
-        ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
-          if(err) {
-            console.error(err)
-            return
-          }
-          let url = `https://ipfs.io/ipfs/${result[0].hash}`
-          console.log(`Url --> ${url}`)
-          console.log(result[0].hash);
-          ipfshash = result[0].hash;
-          ipfshash = getBytes32FromIpfsHash(ipfshash);
-          console.log(ipfshash);
-        })
-      }
-      const doc = document.getElementById("doc");
-      reader.readAsArrayBuffer(doc.files[0]); // Read Provided File
+// window.upload = function()
+// {
+//       const reader = new FileReader();
+//       reader.onloadend = function() {
+//         const ipfs = window.IpfsApi('localhost', 5001) 
+//         const buf = buffer.Buffer(reader.result) // Convert data into buffer
+//         ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
+//           if(err) {
+//             console.error(err)
+//             return
+//           }
+//           let url = `https://ipfs.io/ipfs/${result[0].hash}`
+//           console.log(`Url --> ${url}`)
+//           console.log(result[0].hash);
+//           ipfshash = result[0].hash;
+//           ipfshash = getBytes32FromIpfsHash(ipfshash);
+//           console.log(ipfshash);
+//         })
+//       }
+//       const doc = document.getElementById("doc");
+//       reader.readAsArrayBuffer(doc.files[0]); // Read Provided File
 
-}
+// }
 
 
 window.registerUser = function(form) {
@@ -96,14 +95,33 @@ window.getUsers = function(){
 
 window.postProject = function(form) {
  
-  let desc = $('#desc').val();
+        let ipfshash;
+       const reader = new FileReader();
+      reader.onloadend = function() {
+        const ipfs = window.IpfsApi('localhost', 5001) 
+        const buf = buffer.Buffer(reader.result) // Convert data into buffer
+        ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
+          if(err) {
+            console.error(err)
+            return
+          }
+          else
+          {
+
+          ipfshash = getBytes32FromIpfsHash(result[0].hash);
+          }
+          let url = `https://ipfs.io/ipfs/${result[0].hash}`
+          console.log(`Url --> ${url}`)
+          console.log(result[0].hash);
+
+            let desc = $('#desc').val();
   //let doc ;      //ipfs hash 
   //ipfs code goes here
   //doc = getBytes32FromIpfsHash(ipfshash)
-  let cost = $('#cost').val();
-
+  let cost = $('#cost').val()*1000;
+console.log(cost,desc,ipfshash);
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.postProject(cost,desc,ipfshash,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "ether")})
+    contractInstance.postProject(cost,desc,ipfshash,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "finney")})
     .then(function(){
       console.log("Project Posted");
     })
@@ -111,17 +129,30 @@ window.postProject = function(form) {
       console.log("Project not posted!!");
     })
   })
+
+
+          console.log(ipfshash);
+        })
+      }
+      const doc = document.getElementById("doc");
+      reader.readAsArrayBuffer(doc.files[0]); // Read Provided File
+
+
+
+
+
 }
 
 
 window.getProjects = function(){
-  let fields = [ 'id', 'cli_email','freelancer_email', 'cost', 'desc', 'document', 'status'];
+  let fields = [ 'id', 'cli_email', 'cost', 'desc', 'document', 'status'];
   let projects = {};
+  console.log(getIpfsHashFromBytes32("0x1df8db7c03c3cdac8c2694e1a183024fff5a3e12a544b0a852294539c66b5089"));
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.getProjects.call()
     .then(function(res)
-    { 
-        console.log("Hello");
+    {   
+        //console.log("Hello");
         console.log(res);
         for(let i=0;i<res[i].length;i++)
         {
@@ -129,7 +160,7 @@ window.getProjects = function(){
           for(let j=0;j<fields.length;j++)
           {
               obj[fields[j]] = res[j][i].toString();
-              if(j==1 || j==2|| j==4 || j==5)
+              if(j==1 || j==3)
                 obj[fields[j]] = web3.toAscii(obj[fields[j]]);
               if (j==4)
                 obj[fields[j]] = getIpfsHashFromBytes32(obj[fields[j]]);  // retrieves ipfs hash
@@ -143,11 +174,11 @@ window.getProjects = function(){
 }
 
 
-window.acceptProject = function(form) {
-  let id = $('#project_id').val();
+window.acceptProject = function() {
+  let id = parseInt($('#project_id').val());
   let ether = parseInt($('#project_cost').val())*0.2;
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "ether")})
+    contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "wei")})
     .then(function(){
       console.log("Project Accepted");
     })
