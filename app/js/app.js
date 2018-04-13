@@ -2,6 +2,21 @@ import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
 const bs58 = require('bs58');
 
+import "../css/materialize.css";
+import "../css/style.css";
+
+import background1 from "../pics/background1.jpg";
+import background2 from "../pics/background2.jpg";
+import background3 from "../pics/background3.jpg";
+
+var test1 = document.getElementById('background1');
+test1.src = background1;
+var test2 = document.getElementById('background2');
+test2.src = background2;
+var test3 = document.getElementById('background3');
+test3.src = background3;
+
+
 
 import freelancer_artifacts from '../../build/contracts/Freelancer.json'
 var Freelancer = contract(freelancer_artifacts);
@@ -23,29 +38,6 @@ function getIpfsHashFromBytes32(bytes32Hex) {
 // Event triggered functions
 
 
-// window.upload = function()
-// {
-//       const reader = new FileReader();
-//       reader.onloadend = function() {
-//         const ipfs = window.IpfsApi('localhost', 5001) 
-//         const buf = buffer.Buffer(reader.result) // Convert data into buffer
-//         ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
-//           if(err) {
-//             console.error(err)
-//             return
-//           }
-//           let url = `https://ipfs.io/ipfs/${result[0].hash}`
-//           console.log(`Url --> ${url}`)
-//           console.log(result[0].hash);
-//           ipfshash = result[0].hash;
-//           ipfshash = getBytes32FromIpfsHash(ipfshash);
-//           console.log(ipfshash);
-//         })
-//       }
-//       const doc = document.getElementById("doc");
-//       reader.readAsArrayBuffer(doc.files[0]); // Read Provided File
-
-// }
 
 
 window.registerUser = function(form) {

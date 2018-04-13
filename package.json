@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "webpack-dev-server",
     "build": "webpack",
-    "start": "./node_modules/webpack/bin/webpack.js && node server.js",
+    "start": "./node_modules/webpack/bin/webpack.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

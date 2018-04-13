@@ -2,7 +2,7 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: './app/js/app.js',
+  entry: ['./app/js/app.js','./app/js/materialize.js','./app/js/init.js'],
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'app.js'
@@ -11,13 +11,14 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: './app/index.html', to: "index.html" },
       { from: './app/project.html', to: "project.html" },
+            { from: './app/home.html', to: "home.html" },
       { from: './app/payment.html', to: "payment.html" }
           ])
   ],
   module: {
     rules: [
       {
-          test: /\.(jpe?g|png|gif|svg|woff|woff2|eot|ttf)$/i,  // a regular expression that catches .js files
+          test: /\.(jpeg|png|gif|jpg|svg|woff|woff2|eot|ttf)$/i,  // a regular expression that catches .js files
           exclude: /node_modules/,
           loader: 'url-loader',
       }    
