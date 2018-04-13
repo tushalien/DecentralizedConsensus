@@ -232,7 +232,9 @@ contract Freelancer  {
     function disputeProject(uint id ) public {
         require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer == msg.sender);
         Project storage project = projectinfo[id];
+        require(project.project_status != 3);
         project.project_status = 2;
+
 
     }
 
