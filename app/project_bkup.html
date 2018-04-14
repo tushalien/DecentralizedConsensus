@@ -1,0 +1,48 @@
+<html>
+<head>
+    <script src="https://wzrd.in/standalone/buffer"></script>
+    <script src="https://unpkg.com/ipfs-api@9.0.0/dist/index.js"
+    integrity="sha384-5bXRcW9kyxxnSMbOoHzraqa7Z0PQWIao+cgeg327zit1hz5LZCEbIMx/LWKPReuB" 
+    crossorigin="anonymous"></script>
+</head>
+<body onload="getProjects();return false;">
+
+<h1> Post a Project</h1>
+<form onsubmit="postProject();return false;">
+  Project Desc:<br>
+  <input type="text" id="desc" name="desc">
+  <br>
+      <fieldset>
+        <legend>Upload Project Documnet(Terms and Conditions)</legend>
+        <input type="file" name="doc" id="doc">
+       
+      </fieldset>
+  <br>
+  Project Cost:<br>
+  <input type="text" id="cost" name="cost">
+  <br>
+  <br><br>
+  <input type="submit" value="Submit">
+</form> 
+
+<br>
+<h1> Projects Available</h1>
+<div class="projects">
+</div>
+
+
+<div>
+<h1> Accept Project </h1>
+Project ID
+  <input type="text" id="project_id" name="cost">
+  Project cost
+  <input type="text" id="project_cost" name="cost">
+  <input type="submit" value="Submit" onclick="acceptProject();">
+</div>
+</body>
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+<script src="app.js"></script>
+
+</html>
