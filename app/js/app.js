@@ -5,6 +5,7 @@ const bs58 = require('bs58');
 import "../css/materialize.css";
 import "../css/style.css";
 
+
 import background1 from "../pics/background1.jpg";
 import background2 from "../pics/background2.jpg";
 import background3 from "../pics/background3.jpg";

@@ -18,4 +18,6 @@ router.get('/project', function (req, res) {
   res.render('project.html');
 router.get('/payment', function (req, res) {
   res.render('payment.html');
+  router.get('/register', function (req, res) {
+  res.render('register.html');
 })
