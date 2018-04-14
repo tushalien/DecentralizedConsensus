@@ -55,7 +55,7 @@ h5
 </style>
 
 </head>
-<body>
+<body onload="getUsers(); return false;">
   <nav class="white" role="navigation">
     <div class="nav-wrapper container">
       <a id="logo-container" href="./" class="brand-logo">EtherWork</a>
@@ -77,7 +77,7 @@ h5
 	</ul>
 	
 	<div id="register" class="col s12">
-		<form class="col s12">
+		<form class="col s12" onsubmit="registerUser();return false;">
 			<div class="form-container">
 				<h3 class="teal-text">Welcome</h3>
 				
@@ -90,7 +90,7 @@ h5
 					<div class="row">
 					<div class="input-field col s12">
 					 
-					    <select>
+					    <select id ="role">
 					      <option value="" disabled selected>Choose your Role</option>
 					      <option value="0">Web Developer</option>
 					      <option value="1">UI Designer</option>

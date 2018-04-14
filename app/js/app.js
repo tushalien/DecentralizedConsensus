@@ -6,16 +6,16 @@ import "../css/materialize.css";
 import "../css/style.css";
 
 
-import background1 from "../pics/background1.jpg";
-import background2 from "../pics/background2.jpg";
-import background3 from "../pics/background3.jpg";
+// import background1 from "../pics/background1.jpg";
+// import background2 from "../pics/background2.jpg";
+// import background3 from "../pics/background3.jpg";
 
-var test1 = document.getElementById('background1');
-test1.src = background1;
-var test2 = document.getElementById('background2');
-test2.src = background2;
-var test3 = document.getElementById('background3');
-test3.src = background3;
+// var test1 = document.getElementById('background1');
+// test1.src = background1;
+// var test2 = document.getElementById('background2');
+// test2.src = background2;
+// var test3 = document.getElementById('background3');
+// test3.src = background3;
 
 
 
@@ -138,7 +138,7 @@ console.log(cost,desc,ipfshash);
 
 
 window.getProjects = function(){
-  let fields = [ 'id', 'cli_email', 'cost', 'desc', 'document', 'status'];
+  let fields = [ 'id', 'cli_email', 'cost', 'desc', 'doc', 'status'];
   let projects = {};
   console.log(getIpfsHashFromBytes32("0x1df8db7c03c3cdac8c2694e1a183024fff5a3e12a544b0a852294539c66b5089"));
   Freelancer.deployed().then(function(contractInstance){
@@ -160,16 +160,73 @@ window.getProjects = function(){
       }
           projects[i]=obj;
         }
-        
+              var total_str='';
+              var count=0;
+
         console.log(projects);
+        for(var key in projects){
+          let id = projects[key].id;
+          let cli_email = projects[key].cli_email;
+          let cost =  projects[key].cost;
+          let desc = projects[key].desc;
+          let doc = projects[key].doc;
+          let status = projects[key].status;
+          let display_dispute = 'none';
+          let display_accept = 'none';
+          let display_undertaken = 'none';
+          let display_close = 'none';
+          if(status == 0)
+            display_accept = 'block';
+          else if ( status == 1)
+            display_undertaken = 'block';
+          else if (status == 2)
+            display_dispute ='block';
+          else
+            display_close = 'block';
+          // let display_close = '';
+          // if(complaints[key].status == 2)
+          //   display_close = 'none';
+          // console.log(complaints[key]);
+
+
+                var str=`<div class="col-md-12 project">
+              <div class="card" >
+                <div class="card-content black-text">
+                  <span class="card-title">${desc} </span>
+                  <p>- by ${cli_email}</p>
+                  <p> The full specifications of the project is available <a href="https://ipfs.io/ipfs/${doc}">here. </a></p>
+                  <p> Cost : ${cost} wei (1 ether = 10^18 wei) </p>
+                </div>
+
+              <div class="card-action">
+                 <button data ="${id}" cost= "${cost}" onclick = "acceptProject('${id}', '${cost}');" class="btn waves-effect waves-light display_accept" type="submit" name="action" style="display:${display_accept}">Accept Project
+                </button>
+                 <button data ="${id}" class="btn waves-effect waves-light display_undertaken" type="submit" name="action" style="display:${display_undertaken}">Project Undertaken
+                </button>
+                 <button data ="${id}" class="btn waves-effect waves-light display_dispute" type="submit" name="action" style="display:${display_dispute}"> Dispute - Apply for Jury
+                </button>
+                 <button data ="${id}" class="btn waves-effect waves-light display_close" type="submit" name="action" style="display:${display_close}"> PRoject CLosed
+                </button>
+              </div>
+            </div>
+            </div>`;
+            total_str += str;
+            count=1;
+      }
+      if(count == 0)
+        $('.project_details').html('<center><h3>No projects found</h3></center>');
+      else
+        $('.project_details').html(total_str);
   })
     })
 }
 
 
-window.acceptProject = function() {
-  let id = parseInt($('#project_id').val());
-  let ether = parseInt($('#project_cost').val())*0.2;
+window.acceptProject = function(id,cost) {
+
+
+  let ether = parseInt(cost)*0.2;
+  console.log(id,ether);
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "wei")})
     .then(function(){

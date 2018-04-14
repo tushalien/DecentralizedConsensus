@@ -11,10 +11,7 @@
     <script src="https://unpkg.com/ipfs-api@9.0.0/dist/index.js"
     integrity="sha384-5bXRcW9kyxxnSMbOoHzraqa7Z0PQWIao+cgeg327zit1hz5LZCEbIMx/LWKPReuB" 
     crossorigin="anonymous"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
 
-<script src="app.js"></script>
 
 <style>
   
@@ -46,7 +43,7 @@ h5
     <!-- Compiled and minified JavaScript -->
    
 </head>
-<body>
+<body onload="getProjects();return false;">
   <nav class="white" role="navigation">
     <div class="nav-wrapper container">
       <a id="logo-container" href="./" class="brand-logo">EtherWork</a>
@@ -70,7 +67,7 @@ h5
     <li class="tab col s3"><a class="white-text" href="#register">PROJECTS</a></li>
   </ul>
   
-   <div class="row">
+   <div class="row project_details">
 
     <div class="col-md-12 project">
       <div class="card">
@@ -133,7 +130,7 @@ h5
   <div id="upload_project" class="modal">
     <div class="modal-content">
       <h4>Modal Header</h4>
-     <form class="col s12" style="margin-top: 10%">
+     <form class="col s12" onsubmit="postProject();return false;" style="margin-top: 10%">
                   <div class="form-container">
                   
                     
@@ -155,7 +152,7 @@ h5
                       <div class="file-field input-field">
                         <div class="btn">
                           <span>File</span>
-                          <input type="file">
+                          <input type="file" name="doc" id="doc">
                         </div>
                         <div class="file-path-wrapper">
                           <input class="file-path validate" type="text" placeholder="Upload Project Documnet(Terms and Conditions)">
@@ -181,6 +178,11 @@ h5
 
 
 
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+<script src="app.js"></script>
   <script type="text/javascript">   
 $(document).ready(function(){
     $('.fixed-action-btn').floatingActionButton();
