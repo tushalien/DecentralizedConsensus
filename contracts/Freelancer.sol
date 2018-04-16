@@ -168,7 +168,7 @@ contract Freelancer  {
         return(email, role);
     }
 
-    function getUserMail(address addr) public constant  returns (bytes32){
+    function getUserMail(address addr) public  returns (bytes32){
         bytes32 email = userinfo[addr].email;
         return(email);
     }
@@ -212,6 +212,29 @@ contract Freelancer  {
         return(id, cli_mail, cost, desc, document, status);
     }
 
+    function getProjectsByAddress() public returns (uint[],bytes32[], bytes32[], uint[],bytes32[], uint[]){
+        uint[] memory id = new uint[](projects.length);
+        bytes32[] memory cli_mail = new bytes32[](projects.length);
+        bytes32[] memory free_mail = new bytes32[](projects.length);
+        uint[] memory cost = new uint[](projects.length);
+        bytes32[] memory desc = new bytes32[](projects.length);
+        uint[] memory status = new uint[](projects.length);
+        for(uint i=0;i<projects.length;i++){
+            Project storage p = projectinfo[i];
+            if (p.client == msg.sender || p.freelancer == msg.sender)
+            {
+            id[i] = p.id;
+            cli_mail[i]= getUserMail(p.client);
+            free_mail[i]= getUserMail(p.freelancer);
+            cost[i]=p.cost;
+            desc[i] = p.desc;
+            status[i] = p.project_status;
+            }
+        }
+        
+        return(id, cli_mail,free_mail, cost, desc,status);
+    }
+
 
 
     function acceptProject(uint id ) public payable {
@@ -223,16 +246,25 @@ contract Freelancer  {
     }
 
     function closeProject(uint id ) public {
-        require (projectinfo[id].client == msg.sender);
+        require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer== msg.sender);
         Project storage project = projectinfo[id];
+        if ( project.client== msg.sender && project.project_status == 1 )
+            project.project_status = 3;
+        if ( project.freelancer== msg.sender && project.project_status == 1 )
+            project.project_status = 4;
+        if ( project.client== msg.sender && project.project_status == 4 )
+            project.project_status = 5;
+        if ( project.freelancer== msg.sender && project.project_status == 3 )
+            project.project_status = 5;
 
-        project.project_status = 3;
     }
-
+    // 3 client closed
+    // 4 freelancer closed
+    // 5 both closed
     function disputeProject(uint id ) public {
         require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer == msg.sender);
         Project storage project = projectinfo[id];
-        require(project.project_status != 3);
+        require(project.project_status != 0 && project.project_status != 5);
         project.project_status = 2;
 
 
