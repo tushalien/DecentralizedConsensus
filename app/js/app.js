@@ -246,9 +246,11 @@ window.getProjectsByAddress = function(){
 
         console.log(projects);
         for(var key in projects){
+          let cost =  projects[key].cost;
+          if (cost != 0)
+          {
           let id = projects[key].id;
           let cli_mail = projects[key].cli_mail;
-          let cost =  projects[key].cost;
           let free_mail = projects[key].free_mail;
           let desc = projects[key].desc;
           let status = projects[key].status;
@@ -289,6 +291,7 @@ window.getProjectsByAddress = function(){
             </div>`;
             total_str += str;
             count=1;
+          }
       }
       if(count == 0)
         $('.project_details').html('<center><h3>No projects found</h3></center>');
