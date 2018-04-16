@@ -140,7 +140,6 @@ console.log(cost,desc,ipfshash);
 window.getProjects = function(){
   let fields = [ 'id', 'cli_email', 'cost', 'desc', 'doc', 'status'];
   let projects = {};
-  console.log(getIpfsHashFromBytes32("0x1df8db7c03c3cdac8c2694e1a183024fff5a3e12a544b0a852294539c66b5089"));
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.getProjects.call()
     .then(function(res)
@@ -221,6 +220,83 @@ window.getProjects = function(){
     })
 }
 
+window.getProjectsByAddress = function(){
+  let fields = [ 'id', 'cli_mail','free_mail' ,'cost', 'desc', 'status'];
+  let projects = {};
+  Freelancer.deployed().then(function(contractInstance){
+    contractInstance.getProjectsByAddress.call({gas: 1400000, from: web3.eth.accounts[0]})
+    .then(function(res)
+    {   
+        console.log("Hello");
+        console.log(res);
+        for(let i=0;i<res[i].length;i++)
+        {
+          let obj = {};
+          for(let j=0;j<fields.length;j++)
+          {
+              obj[fields[j]] = res[j][i].toString();
+              if(j==1 || j==2 || j==4)
+                obj[fields[j]] = web3.toAscii(obj[fields[j]]);
+
+      }
+          projects[i]=obj;
+        }
+              var total_str='';
+              var count=0;
+
+        console.log(projects);
+        for(var key in projects){
+          let id = projects[key].id;
+          let cli_mail = projects[key].cli_mail;
+          let cost =  projects[key].cost;
+          let free_mail = projects[key].free_mail;
+          let desc = projects[key].desc;
+          let status = projects[key].status;
+          let display_dispute = 'none';
+          let display_accept = 'none';
+          let display_undertaken = 'none';
+          let display_close = 'none';
+          if(status == 0)
+            display_accept = 'block';
+          else if ( status == 1)
+            display_undertaken = 'block';
+          else if (status == 2)
+            display_dispute ='block';
+          else
+            display_close = 'block';
+          // let display_close = '';
+          // if(complaints[key].status == 2)
+          //   display_close = 'none';
+          // console.log(complaints[key]);
+
+
+                var str=`<div class="col-md-12 project">
+              <div class="card" >
+                <div class="card-content black-text">
+                  <span class="card-title">${desc} </span>
+                  <p> Posted by ${cli_mail}</p>
+                  <p> Undertaken by ${free_mail} </p>
+                  <p> Cost : ${cost} wei (1 ether = 10^18 wei) </p>
+                </div>
+
+              <div class="card-action">
+                 <button data ="${id}" class="btn waves-effect waves-light display_dispute" type="submit" name="action" style="display:${display_dispute}">Mark it as Disputed
+                </button>
+                 <button data ="${id}" class="btn waves-effect waves-light display_close" type="submit" name="action" style="display:${display_close}"> Mark it closed
+                </button>
+              </div>
+            </div>
+            </div>`;
+            total_str += str;
+            count=1;
+      }
+      if(count == 0)
+        $('.project_details').html('<center><h3>No projects found</h3></center>');
+      else
+        $('.project_details').html(total_str);
+  })
+    })
+}
 
 window.acceptProject = function(id,cost) {
 
