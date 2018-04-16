@@ -254,18 +254,26 @@ window.getProjectsByAddress = function(){
           let free_mail = projects[key].free_mail;
           let desc = projects[key].desc;
           let status = projects[key].status;
-          let display_dispute = 'none';
-          let display_accept = 'none';
+
+          let display_open = 'none';
           let display_undertaken = 'none';
-          let display_close = 'none';
+          let display_review = 'none';
+          let display_client = 'none';
+          let display_freelancer = 'none';
+          let display_closed = 'none';
           if(status == 0)
-            display_accept = 'block';
+            display_open = 'block';
           else if ( status == 1)
             display_undertaken = 'block';
           else if (status == 2)
-            display_dispute ='block';
+            display_review ='block';
+          else if (status == 3)
+            display_client = 'block';
+          else if (status == 4)
+            display_freelancer = 'block';  
           else
-            display_close = 'block';
+            display_closed ='block';
+
           // let display_close = '';
           // if(complaints[key].status == 2)
           //   display_close = 'none';
@@ -282,9 +290,16 @@ window.getProjectsByAddress = function(){
                 </div>
 
               <div class="card-action">
-                 <button data ="${id}" class="btn waves-effect waves-light display_dispute" type="submit" name="action" style="display:${display_dispute}">Mark it as Disputed
+                        <a href="#" style="display:${display_open}">Open</a>
+                        <a href="#" style="display:${display_undertaken}">Undertaken</a>
+                        <a href="#" style="display:${display_review}">Under Review</a>
+                        <a href="#" style="display:${display_client}">Marked as Completed BY Client</a>
+                        <a href="#" style="display:${display_freelancer}">Marked as Completed by Freelancer</a>
+                        <a href="#" style="display:${display_closed}">Completed</a>
+                         <br> 
+                 <button data ="${id}" onclick="disputeProject(${id})" class="btn waves-effect waves-light" type="submit" name="action" ">Mark it as Disputed
                 </button>
-                 <button data ="${id}" class="btn waves-effect waves-light display_close" type="submit" name="action" style="display:${display_close}"> Mark it closed
+                 <button data ="${id}" onclick="closeProject(${id})" class="btn waves-effect waves-light" type="submit" name="action" > Mark it as Closed
                 </button>
               </div>
             </div>
@@ -318,8 +333,7 @@ window.acceptProject = function(id,cost) {
 }
 
 
-window.closeProject = function(form) {
-  let id = $('#project_id').val();
+window.closeProject = function(id) {
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.closeProject(id,{gas: 1400000, from: web3.eth.accounts[0]})
     .then(function(){
@@ -332,8 +346,8 @@ window.closeProject = function(form) {
 }
 
 
-window.disputeProject = function(form) {
-  let id = $('#project_id').val();
+window.disputeProject = function(id) {
+
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.disputeProject(id,{gas: 1400000, from: web3.eth.accounts[0]})
     .then(function(){
