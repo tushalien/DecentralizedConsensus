@@ -14,6 +14,7 @@ module.exports = {
       { from: './app/payment.html', to: "payment.html" },
       { from: './app/dispute.html', to: "dispute.html" },
       { from: './app/myproject.html', to: "myproject.html" },
+            { from: './app/owner.html', to: "owner.html" },
        { from: './app/register.html', to: "register.html" }
           ])
   ],
