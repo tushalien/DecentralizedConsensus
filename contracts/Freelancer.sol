@@ -20,7 +20,7 @@ contract ERC20 is ERC20Events {
 }
 
 
-contract Freelancer  {
+contract Freelancer is ERC20 {
     
     address owner;
     uint project_id;
@@ -42,16 +42,53 @@ contract Freelancer  {
         return (keccak256(number + salt));
     }
 
-    function getRandom(uint b) public view returns (uint)  // b > a 
-    {
-        uint random_number = (uint(block.blockhash(block.number-1))%b + 1);
-        return random_number;
+    // function getRandom(uint b) public view returns (uint)  // b > a 
+    // {
+    //     uint random_number = (uint(block.blockhash(block.number-1))%b + 1);
+    //     return random_number;
+    // }
+
+
+
+    uint8 public decimals;
+    uint public _totalSupply;
+
+    mapping(address => uint) balances;
+    mapping(address => mapping(address => uint)) allowed;
+
+
+
+    function totalSupply() public constant returns (uint) {
+        return _totalSupply  - balances[address(0)];
+    }
+
+    function balanceOf(address tokenOwner) public constant returns (uint balance) {
+        return balances[tokenOwner];
     }
 
 
 
-    mapping (address => uint256) public balances;
+    function approve(address spender, uint tokens) public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        Approval(msg.sender, spender, tokens);
+        return true;
+    }
 
+    function transferFrom(address from, address to, uint tokens) public returns (bool success) {
+        Transfer(from, to, tokens);
+        return true;
+    }
+
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining) {
+        return allowed[tokenOwner][spender];
+    }
+
+    function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) {
+        allowed[msg.sender][spender] = tokens;
+        Approval(msg.sender, spender, tokens);
+        return true;
+    }
+      
     event LogDeposit(address sender, uint amount);
     event LogWithdrawal(address receiver, uint amount);
     event LogTransfer(address sender, address to, uint amount);
@@ -82,7 +119,7 @@ contract Freelancer  {
     { 
         address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
         ERC20 token = ERC20(_tokenAddress);
-        require(token.balanceOf(msg.sender) >= 100); 
+        //require(token.balanceOf(msg.sender) >= 100); 
         val = val*1000000000;
         token.transferFrom(src, dst, val);
         //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
@@ -168,7 +205,8 @@ contract Freelancer  {
         return(email, role);
     }
 
-    function getUserMail(address addr) public  returns (bytes32){
+    function getUserMail(address addr) public view returns (bytes32)
+    {
         bytes32 email = userinfo[addr].email;
         return(email);
     }
@@ -178,12 +216,12 @@ contract Freelancer  {
         project.id = project_id++;
         project.client = msg.sender;
         project.freelancer = msg.sender;
-        project.cost = msg.value;
+        project.cost = cost;
         project.desc = desc;
         project.document = document;
         project.project_status = 0;
         projectinfo[project.id] = project;
-        balances[msg.sender] += msg.value;
+        balances[msg.sender] = msg.value;
         LogDeposit(msg.sender, msg.value);
         projects.push(project);
         return true;
@@ -212,7 +250,8 @@ contract Freelancer  {
         return(id, cli_mail, cost, desc, document, status);
     }
 
-    function getProjectsByAddress() public returns (uint[],bytes32[], bytes32[], uint[],bytes32[], uint[]){
+    function getProjectsByAddress() public returns (uint[],bytes32[], bytes32[], uint[],bytes32[], uint[])
+    {
         uint[] memory id = new uint[](projects.length);
         bytes32[] memory cli_mail = new bytes32[](projects.length);
         bytes32[] memory free_mail = new bytes32[](projects.length);
@@ -241,7 +280,7 @@ contract Freelancer  {
         Project storage project = projectinfo[id];
         project.freelancer = msg.sender;
         project.project_status = 1;
-        balances[msg.sender] += msg.value;
+        balances[msg.sender] = msg.value;
         LogDeposit(msg.sender, msg.value);
     }
 
@@ -274,43 +313,52 @@ contract Freelancer  {
 
     
     function applyForJury(uint id , uint value) public payable {
-        Jury memory j;
+        Jury storage j;
         j.addr = msg.sender;
+        j.id = id;
         j.stake_tokens = value;
-        sendTokens(msg.sender, this , value);
+        //sendTokens(msg.sender, this , value);
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
 
      }
 
-    function selectJury(uint id) onlyOwner public returns (bool)
-    {
-        Project storage project = projectinfo[id];
+    function selectJury(uint id)  public onlyOwner returns ( address[], uint[], uint[], address[])
+    {    Project storage project = projectinfo[id];
         uint[] memory range = new uint[](project.applied.length);
         uint[] memory randompool = new uint[](project.applied.length);
         address[] memory jury = new address[](project.applied.length);
+       
         for(uint i=0;i<project.applied.length;i++){
             jury[i] = project.applied[i];
         }
 
         range[0] =0 ;
         for(uint x=0;x<project.applied.length;x++){
-            range[x] += juryinfo[jury[x]].stake_tokens;
+            if (x==0)
+                range[x] = juryinfo[jury[x]].stake_tokens;
+            else
+                range[x] = range[x-1]+ juryinfo[jury[x]].stake_tokens;
         }
-        for(uint a=0;a<project.applied.length;a++){
-            randompool[a] = getRandom(range[(project.applied.length)-1]);
-        }
+        randompool[0]=8;
+        randompool[1]=23;
+        randompool[2]=57;
+        
         uint y=0;
-        for(uint b=0;b<project.applied.length && y < 5;b++){
+        for(uint b=0;b<project.applied.length && y < 3;b++){
             if ( randompool[y] < range[b])
-            {
-                project.juries.push(juryinfo[jury[b]].addr);
+            {   //Jury storage jurys = juryinfo[jury[b]];
+                project.juries.push(jury[b]);
+                //Jury storage jurys = juryinfo[jury[b]];
+                //jurys.hash = hash;
+                //jurys.id = id;
+                y++;
             }
-            y++;
+            
         }
 
         //needs some thoughtful thinking :P
-        return true;
+        return (jury, range, randompool, project.juries);
     }
 
     function voteJury ( uint id, bytes32 hash) public {
@@ -328,8 +376,31 @@ contract Freelancer  {
         jury.vote = vote;
         return true;
     }
+    
+    function getJuries(uint id) public constant returns (address[], uint[],uint[], bytes32[]){
+        
+        Project storage project = projectinfo[id];
 
-    function redistributeFunds(uint id) onlyOwner public returns (bool)
+        address[] memory addr = new address[](project.juries.length);
+        uint[] memory stake_tokens = new uint[](project.juries.length);
+        uint[] memory vote = new uint[](project.juries.length);
+        bytes32[] memory hash = new bytes32[](project.juries.length);
+
+
+
+        for(uint i=0;i<project.juries.length;i++){
+            Jury storage j = juryinfo[project.juries[i]];
+            addr[i] = j.addr;
+            stake_tokens[i] = j.stake_tokens;
+            vote[i]=j.vote;
+            hash[i] = j.hash;
+
+        }
+        return(addr, stake_tokens, vote, hash);
+    }
+    
+
+    function redistributeFunds(uint id) onlyOwner payable public returns (bool)
     {
         address[] memory jury = new address[](projectinfo[id].juries.length);
         for(uint i=0;i<projectinfo[id].juries.length;i++){
@@ -337,26 +408,26 @@ contract Freelancer  {
         }
 
         for(uint c=0;c<jury.length;c++){
-            totalStakes+=juryinfo[jury[c]].stake_tokens;
+            totalStakes = totalStakes + juryinfo[jury[c]].stake_tokens;
             if ( juryinfo[jury[c]].vote == 1)
             {
                 yes++;
-                yes_tokens+=juryinfo[jury[c]].stake_tokens;
+                yes_tokens = yes_tokens + juryinfo[jury[c]].stake_tokens;
             }
             else
             {
                 no++;
-                no_tokens+=juryinfo[jury[c]].stake_tokens;
+                no_tokens = no_tokens + juryinfo[jury[c]].stake_tokens;
             }
         }
 
         if (yes>no)
         {
-            projectinfo[id].freelancer.transfer(balances[projectinfo[id].freelancer]);
-            balances[projectinfo[id].freelancer] = 0;
-            etherstodist = (balances[projectinfo[id].client])/jury.length;
-            tokenstodist = (totalStakes - yes_tokens)/yes;
+            projectinfo[id].freelancer.transfer(balances[projectinfo[id].client]);
             balances[projectinfo[id].client] = 0;
+            etherstodist = (balances[projectinfo[id].freelancer])/jury.length;
+            tokenstodist = (totalStakes - yes_tokens)/yes;
+            balances[projectinfo[id].freelancer] = 0;
             for(uint m=0;m<jury.length;m++)
             {
                 uint tokens = 0;
@@ -376,18 +447,20 @@ contract Freelancer  {
             etherstodist = (balances[projectinfo[id].freelancer])/jury.length;
             tokenstodist = (totalStakes - no_tokens)/no;
             balances[projectinfo[id].freelancer] = 0;
-            for(uint k=0;i<jury.length;k++)
+            for(uint k=0;k<jury.length;k++)
             {
                 uint tokens_1 = 0;
-                if ( juryinfo[jury[i]].vote == 2)
+                if ( juryinfo[jury[k]].vote == 2)
                 {
-                    tokens_1 = juryinfo[jury[i]].stake_tokens + tokenstodist;
-                    sendTokens(this, juryinfo[jury[i]].addr, tokens_1);
+                    tokens_1 = juryinfo[jury[k]].stake_tokens + tokenstodist;
+                    sendTokens(this, juryinfo[jury[k]].addr, tokens_1);
                 }
-                projectinfo[id].juries[i].transfer(etherstodist);
+                projectinfo[id].juries[k].transfer(etherstodist);
                 
             }
 
         }
+        projectinfo[id].project_status = 2;
+        
     }
 }   
