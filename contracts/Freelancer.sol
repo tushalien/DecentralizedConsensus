@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;pragma solidity ^0.4.18;
+pragma solidity ^0.4.18;
 pragma experimental ABIEncoderV2;
 
 
@@ -317,13 +317,16 @@ contract Freelancer is ERC20 {
         j.addr = msg.sender;
         j.id = id;
         j.stake_tokens = value;
-        //sendTokens(msg.sender, this , value);
+        // address _tokenAddresss = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
+        // ERC20 tokens = ERC20(_tokenAddresss);
+        // tokens.approve(this, 1000000000000);
+        sendTokens(msg.sender, this , value);
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
 
      }
 
-    function selectJury(uint id)  public onlyOwner returns ( address[], uint[], uint[], address[])
+    function selectJury(uint id)  public returns ( address[], uint[], uint[], address[])
     {    Project storage project = projectinfo[id];
         uint[] memory range = new uint[](project.applied.length);
         uint[] memory randompool = new uint[](project.applied.length);
@@ -400,7 +403,7 @@ contract Freelancer is ERC20 {
     }
     
 
-    function redistributeFunds(uint id) onlyOwner payable public returns (bool)
+    function redistributeFunds(uint id)  payable public returns (bool)
     {
         address[] memory jury = new address[](projectinfo[id].juries.length);
         for(uint i=0;i<projectinfo[id].juries.length;i++){
