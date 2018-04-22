@@ -20,13 +20,17 @@ contract ERC20 is ERC20Events {
 }
 
 
-contract Freelancer is ERC20 {
+contract Freelancer {
     
     address owner;
     uint project_id;
+    address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
+    ERC20 token = ERC20(_tokenAddress);
 
     function Freelancer() public payable{
         owner = msg.sender;
+        token.approve(this, 10000000000000);
+
     }
 
     modifier onlyOwner()
@@ -48,47 +52,10 @@ contract Freelancer is ERC20 {
     //     return random_number;
     // }
 
-
-
-    uint8 public decimals;
-    uint public _totalSupply;
-
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
 
 
-
-    function totalSupply() public constant returns (uint) {
-        return _totalSupply  - balances[address(0)];
-    }
-
-    function balanceOf(address tokenOwner) public constant returns (uint balance) {
-        return balances[tokenOwner];
-    }
-
-
-
-    function approve(address spender, uint tokens) public returns (bool success) {
-        allowed[msg.sender][spender] = tokens;
-        Approval(msg.sender, spender, tokens);
-        return true;
-    }
-
-    function transferFrom(address from, address to, uint tokens) public returns (bool success) {
-        Transfer(from, to, tokens);
-        return true;
-    }
-
-    function allowance(address tokenOwner, address spender) public constant returns (uint remaining) {
-        return allowed[tokenOwner][spender];
-    }
-
-    function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) {
-        allowed[msg.sender][spender] = tokens;
-        Approval(msg.sender, spender, tokens);
-        return true;
-    }
-      
     event LogDeposit(address sender, uint amount);
     event LogWithdrawal(address receiver, uint amount);
     event LogTransfer(address sender, address to, uint amount);
@@ -100,7 +67,7 @@ contract Freelancer is ERC20 {
     }
 
     function withdraw(uint value) payable public returns(bool success) {
-        require(balances[msg.sender] < value) ;
+        require(balances[msg.sender] > value) ;
         balances[msg.sender] -= value;
         msg.sender.transfer(value);
         LogWithdrawal(msg.sender, value);
@@ -108,22 +75,22 @@ contract Freelancer is ERC20 {
     }
 
     function transfer(address to, uint value) public returns(bool success) {
-        require(balances[msg.sender] < value);
+        require(balances[msg.sender] > value);
         balances[msg.sender] -= value;
         to.transfer(value);
         LogTransfer(msg.sender, to, value);
         return true;
     }
 
-    function sendTokens(address src, address dst, uint val) public 
-    { 
-        address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
-        ERC20 token = ERC20(_tokenAddress);
-        //require(token.balanceOf(msg.sender) >= 100); 
-        val = val*1000000000;
-        token.transferFrom(src, dst, val);
-        //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
-    }
+    // function sendTokens(address src, address dst, uint val) public 
+    // { 
+    //     address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
+    //     ERC20 token = ERC20(_tokenAddress);
+    //     //require(token.balanceOf(msg.sender) >= 100); 
+    //     val = val*1000000000;
+    //     token.transferFrom(src, dst, val);
+    //     //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
+    // }
 
 
 
@@ -172,7 +139,6 @@ contract Freelancer is ERC20 {
 
     mapping (address => User) userinfo;  // one's public address to his details mapping
     mapping (uint => Project) projectinfo;  // id to project mapping
-    mapping (uint => Jury[] ) juriesinaproject;
     mapping (address => uint) juryinvolved;
     mapping (address => Jury) juryinfo;
 
@@ -184,6 +150,7 @@ contract Freelancer is ERC20 {
         user.role = role;
         userinfo[msg.sender] = user;
         users.push(user);
+        token.transfer(msg.sender, 100000000000);
     }
 
     function getUsers() public constant returns (address[],bytes32[], uint[]){
@@ -216,12 +183,12 @@ contract Freelancer is ERC20 {
         project.id = project_id++;
         project.client = msg.sender;
         project.freelancer = msg.sender;
-        project.cost = cost;
+        project.cost = msg.value;
         project.desc = desc;
         project.document = document;
         project.project_status = 0;
         projectinfo[project.id] = project;
-        balances[msg.sender] = msg.value;
+        balances[msg.sender] += msg.value;
         LogDeposit(msg.sender, msg.value);
         projects.push(project);
         return true;
@@ -280,7 +247,7 @@ contract Freelancer is ERC20 {
         Project storage project = projectinfo[id];
         project.freelancer = msg.sender;
         project.project_status = 1;
-        balances[msg.sender] = msg.value;
+        balances[msg.sender] += msg.value;
         LogDeposit(msg.sender, msg.value);
     }
 
@@ -317,10 +284,10 @@ contract Freelancer is ERC20 {
         j.addr = msg.sender;
         j.id = id;
         j.stake_tokens = value;
-        // address _tokenAddresss = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
-        // ERC20 tokens = ERC20(_tokenAddresss);
-        // tokens.approve(this, 1000000000000);
-        sendTokens(msg.sender, this , value);
+
+        value = value*1000000000;
+        token.transferFrom(msg.sender, this, value);
+
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
 
