@@ -11,7 +11,6 @@ contract ERC20 is ERC20Events {
     function totalSupply() public view returns (uint);
     function balanceOf(address guy) public view returns (uint);
     function allowance(address src, address guy) public view returns (uint);
-
     function approve(address guy, uint wad) public returns (bool);
     function transfer(address dst, uint wad) public returns (bool);
     function transferFrom(
@@ -24,13 +23,14 @@ contract Freelancer {
     
     address owner;
     uint project_id;
+
     address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
     ERC20 token = ERC20(_tokenAddress);
 
-    function Freelancer() public payable{
+    function Freelancer() public payable
+    {
         owner = msg.sender;
         token.approve(this, 10000000000000);
-
     }
 
     modifier onlyOwner()
@@ -46,11 +46,11 @@ contract Freelancer {
         return (keccak256(number + salt));
     }
 
-    // function getRandom(uint b) public view returns (uint)  // b > a 
-    // {
-    //     uint random_number = (uint(block.blockhash(block.number-1))%b + 1);
-    //     return random_number;
-    // }
+    function getRandom(uint b) public view returns (uint)  // b > a 
+    {
+        uint random_number = (uint(block.blockhash(block.number-1))%b + 1);
+        return random_number;
+    }
 
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
@@ -82,41 +82,30 @@ contract Freelancer {
         return true;
     }
 
-    // function sendTokens(address src, address dst, uint val) public 
-    // { 
-    //     address _tokenAddress = address(0x011d3e0c95A9658301D95F51Dfa9B00778F2Ad7f);
-    //     ERC20 token = ERC20(_tokenAddress);
-    //     //require(token.balanceOf(msg.sender) >= 100); 
-    //     val = val*1000000000;
-    //     token.transferFrom(src, dst, val);
-    //     //token.transferFrom(msg.sender, this, 9900); // transfer the tokens
-    // }
+    uint yes=0;
+    uint cost;
+    uint totalStakes=0;
+    uint no=0;
+    uint yes_tokens=0;
+    uint no_tokens=0;
+    uint etherstodist;
+    uint tokenstodist;
 
-
-
-    uint start_id =0;
-        uint yes=0;
-        uint totalStakes=0;
-        uint no=0;
-        uint yes_tokens=0;
-        uint no_tokens=0;
-        uint etherstodist;
-        uint tokenstodist;
-    struct User {
+    struct User 
+    {
         address addr;
         bytes32 email;
         uint role; // 0 -> WebDev 1-> UI DEsigner 2-> SEO Specialist
     }
     
-    struct Jury {
+    struct Jury 
+    {
         uint id;
         address addr;
         uint stake_tokens;
         uint vote; // 0- > NOt voted, 1-> TRue, 2-> False
         bytes32 hash;
-        uint salt;
     }
-    //Jury[] juries;
     
     struct Project {
         uint id;
@@ -128,18 +117,14 @@ contract Freelancer {
         uint project_status; //0-> Open 1-> Undertaken 2-> in Dispute 3->closed
         address[] juries;
         address[] applied;
-      //  bytes32 time;
     }
 
     
     Project[] projects;
     User[] users;
-    //address[] juries;
-
 
     mapping (address => User) userinfo;  // one's public address to his details mapping
     mapping (uint => Project) projectinfo;  // id to project mapping
-    mapping (address => uint) juryinvolved;
     mapping (address => Jury) juryinfo;
 
     function registerUser(bytes32 email, uint role) public payable {
@@ -182,13 +167,12 @@ contract Freelancer {
         Project memory project ;
         project.id = project_id++;
         project.client = msg.sender;
-        project.freelancer = msg.sender;
         project.cost = msg.value;
         project.desc = desc;
         project.document = document;
         project.project_status = 0;
         projectinfo[project.id] = project;
-        balances[msg.sender] += msg.value;
+        balances[msg.sender] = msg.value;
         LogDeposit(msg.sender, msg.value);
         projects.push(project);
         return true;
@@ -243,15 +227,17 @@ contract Freelancer {
 
 
 
-    function acceptProject(uint id ) public payable {
+    function acceptProject(uint id ) public payable 
+    {
         Project storage project = projectinfo[id];
         project.freelancer = msg.sender;
         project.project_status = 1;
-        balances[msg.sender] += msg.value;
+        balances[msg.sender] = msg.value;
         LogDeposit(msg.sender, msg.value);
     }
 
-    function closeProject(uint id ) public {
+    function closeProject(uint id ) public 
+    {
         require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer== msg.sender);
         Project storage project = projectinfo[id];
         if ( project.client== msg.sender && project.project_status == 1 )
@@ -267,19 +253,17 @@ contract Freelancer {
     // 3 client closed
     // 4 freelancer closed
     // 5 both closed
-    function disputeProject(uint id ) public {
+
+    function disputeProject(uint id ) public 
+    {
         require (projectinfo[id].client == msg.sender || projectinfo[id].freelancer == msg.sender);
         Project storage project = projectinfo[id];
         require(project.project_status != 0 && project.project_status != 5);
         project.project_status = 2;
-
-
     }
 
-
-
-    
-    function applyForJury(uint id , uint value) public payable {
+    function applyForJury(uint id , uint value) public payable 
+    {
         Jury storage j;
         j.addr = msg.sender;
         j.id = id;
@@ -287,7 +271,6 @@ contract Freelancer {
 
         value = value*1000000000;
         token.transferFrom(msg.sender, this, value);
-
         projectinfo[id].applied.push(msg.sender);
         juryinfo[msg.sender] = j;
 
@@ -317,17 +300,12 @@ contract Freelancer {
         uint y=0;
         for(uint b=0;b<project.applied.length && y < 3;b++){
             if ( randompool[y] < range[b])
-            {   //Jury storage jurys = juryinfo[jury[b]];
+            {   
                 project.juries.push(jury[b]);
-                //Jury storage jurys = juryinfo[jury[b]];
-                //jurys.hash = hash;
-                //jurys.id = id;
                 y++;
             }
             
         }
-
-        //needs some thoughtful thinking :P
         return (jury, range, randompool, project.juries);
     }
 
@@ -335,7 +313,6 @@ contract Freelancer {
         require(juryinfo[msg.sender].id == id);
         Jury storage jury = juryinfo[msg.sender];
         jury.hash = hash;
-
     }
 
     function verifyJury(uint id, uint vote, bytes32 hash) public returns(bool)
@@ -355,8 +332,6 @@ contract Freelancer {
         uint[] memory stake_tokens = new uint[](project.juries.length);
         uint[] memory vote = new uint[](project.juries.length);
         bytes32[] memory hash = new bytes32[](project.juries.length);
-
-
 
         for(uint i=0;i<project.juries.length;i++){
             Jury storage j = juryinfo[project.juries[i]];
@@ -391,29 +366,29 @@ contract Freelancer {
             }
         }
 
-        if (yes>no)
+        if (yes>no) //Freelancer won
         {
-            projectinfo[id].freelancer.transfer(balances[projectinfo[id].client]);
+            cost = balances[projectinfo[id].client];
             balances[projectinfo[id].client] = 0;
             etherstodist = (balances[projectinfo[id].freelancer])/jury.length;
+            balances[projectinfo[id].freelancer] = cost;
             tokenstodist = (totalStakes - yes_tokens)/yes;
-            balances[projectinfo[id].freelancer] = 0;
             for(uint m=0;m<jury.length;m++)
             {
                 uint tokens = 0;
                 if ( juryinfo[jury[m]].vote == 1)
                 {
                     tokens = juryinfo[jury[m]].stake_tokens + tokenstodist;
-                    sendTokens(this, juryinfo[jury[m]].addr, tokens);
+                    tokens = tokens * 1000000000;
+                    token.transfer(juryinfo[jury[m]].addr, tokens);
                 }
-                projectinfo[id].juries[m].transfer(etherstodist);
+                balances[projectinfo[id].juries[m]] += etherstodist;
                 
             }
         }
         else
         {
-            projectinfo[id].client.transfer(balances[projectinfo[id].client]);
-            balances[projectinfo[id].client] = 0;
+
             etherstodist = (balances[projectinfo[id].freelancer])/jury.length;
             tokenstodist = (totalStakes - no_tokens)/no;
             balances[projectinfo[id].freelancer] = 0;
@@ -423,14 +398,15 @@ contract Freelancer {
                 if ( juryinfo[jury[k]].vote == 2)
                 {
                     tokens_1 = juryinfo[jury[k]].stake_tokens + tokenstodist;
-                    sendTokens(this, juryinfo[jury[k]].addr, tokens_1);
+                    tokens = tokens * 1000000000;
+                    token.transfer(juryinfo[jury[k]].addr, tokens);
                 }
-                projectinfo[id].juries[k].transfer(etherstodist);
+                balances[projectinfo[id].juries[k]] += etherstodist;
                 
             }
 
         }
-        projectinfo[id].project_status = 2;
+        projectinfo[id].project_status = 5;
         
     }
 }   
