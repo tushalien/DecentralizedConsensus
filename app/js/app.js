@@ -65,7 +65,7 @@ window.getUsers = function(){
   let users = {};
   console.log(Freelancer);
   Freelancer.deployed().then(function(contractInstance){
-  	console.log(contractInstance);
+  	//console.log(contractInstance);
     contractInstance.getUsers.call()
     .then(function(res)
     {
@@ -111,7 +111,7 @@ window.postProject = function(form) {
   //let doc ;      //ipfs hash 
   //ipfs code goes here
   //doc = getBytes32FromIpfsHash(ipfshash)
-  let cost = $('#cost').val()*1000;
+  let cost = $('#cost').val()*1.2*1000;
 console.log(cost,desc,ipfshash);
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.postProject(cost,desc,ipfshash,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(cost, "finney")})
@@ -170,18 +170,28 @@ window.getProjects = function(){
           let desc = projects[key].desc;
           let doc = projects[key].doc;
           let status = projects[key].status;
-          let display_dispute = 'none';
-          let display_accept = 'none';
+
+          let display_open = 'none';
           let display_undertaken = 'none';
-          let display_close = 'none';
+          let display_review = 'none';
+          let display_closed = 'none';
           if(status == 0)
-            display_accept = 'block';
+            display_open = 'block';
           else if ( status == 1)
             display_undertaken = 'block';
           else if (status == 2)
-            display_dispute ='block';
+            display_review ='block';
           else
-            display_close = 'block';
+            display_closed ='block';
+
+          // if(status == 0)
+          //   display_accept = 'block';
+          // else if ( status == 1)
+          //   display_undertaken = 'block';
+          // else if (status == 2)
+          //   display_dispute ='block';
+          // else
+          //   display_closed = 'block';
           // let display_close = '';
           // if(complaints[key].status == 2)
           //   display_close = 'none';
@@ -198,13 +208,14 @@ window.getProjects = function(){
                 </div>
 
               <div class="card-action">
-                 <button data ="${id}" cost= "${cost}" onclick = "acceptProject('${id}', '${cost}');" class="btn waves-effect waves-light display_accept" type="submit" name="action" style="display:${display_accept}">Accept Project
+                        <a href="#" style="display:${display_open}">Open</a>
+                        <a href="#" style="display:${display_undertaken}">Undertaken</a>
+                        <a href="#" style="display:${display_review}">Under Review</a>
+                         <a href="#" style="display:${display_closed}">Completed</a>
+                         <br> 
+                 <button data ="${id}" onclick = "acceptProject('${id}', '${cost}');" class="btn waves-effect waves-light display_accept" type="submit" name="action" style="display:${display_open}">Accept Project
                 </button>
-                 <button data ="${id}" class="btn waves-effect waves-light display_undertaken" type="submit" name="action" style="display:${display_undertaken}">Project Undertaken
-                </button>
-                 <button data ="${id}" class="btn waves-effect waves-light display_dispute" type="submit" name="action" style="display:${display_dispute}"> Dispute - Apply for Jury
-                </button>
-                 <button data ="${id}" class="btn waves-effect waves-light display_close" type="submit" name="action" style="display:${display_close}"> PRoject CLosed
+                 <button data ="${id}" onclick = "disputeProject('${id}');" class="btn waves-effect waves-light display_dispute" type="submit" name="action" style="display:${display_review}"> Dispute - Apply for Jury
                 </button>
               </div>
             </div>
@@ -261,6 +272,7 @@ window.getProjectsByAddress = function(){
           let display_client = 'none';
           let display_freelancer = 'none';
           let display_closed = 'none';
+          let display_visibility = 'block inline';
           if(status == 0)
             display_open = 'block';
           else if ( status == 1)
@@ -272,7 +284,10 @@ window.getProjectsByAddress = function(){
           else if (status == 4)
             display_freelancer = 'block';  
           else
+          {
             display_closed ='block';
+            display_visibility = 'none';
+          }
 
           // let display_close = '';
           // if(complaints[key].status == 2)
@@ -297,9 +312,9 @@ window.getProjectsByAddress = function(){
                         <a href="#" style="display:${display_freelancer}">Marked as Completed by Freelancer</a>
                         <a href="#" style="display:${display_closed}">Completed</a>
                          <br> 
-                 <button data ="${id}" onclick="disputeProject(${id})" class="btn waves-effect waves-light" type="submit" name="action" ">Mark it as Disputed
+                 <button data ="${id}" onclick="disputeProject(${id})" style="display:${display_visibility} " class="btn waves-effect waves-light" type="submit" name="action" ">Mark it as Disputed
                 </button>
-                 <button data ="${id}" onclick="closeProject(${id})" class="btn waves-effect waves-light" type="submit" name="action" > Mark it as Closed
+                 <button data ="${id}" onclick="closeProject(${id})" style="display:${display_visibility}" class="btn waves-effect waves-light" type="submit" name="action" > Mark it as Closed
                 </button>
               </div>
             </div>
@@ -319,10 +334,10 @@ window.getProjectsByAddress = function(){
 window.acceptProject = function(id,cost) {
 
 
-  let ether = parseInt(cost)*0.2;
+  let ether = parseInt(cost);;
   console.log(id,ether);
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "wei")})
+    contractInstance.acceptProject(id,{gas: 1400000, from: web3.eth.accounts[0],value:web3.toWei(ether, "finney")})
     .then(function(){
       console.log("Project Accepted");
     })
@@ -362,13 +377,16 @@ window.disputeProject = function(id) {
 
 window.applyForJury = function(form) {
   let id = $('#project_id').val();
-  let tokens = parseInt($('#tokens').val());
+  let tokens =$('#tokens').val();
+  console.log(id, tokens);
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.applyForJury(id,tokens,{gas: 1400000, from: web3.eth.accounts[0]})
     .then(function(){
       console.log("Applied for Jury");
     })
     .catch(function(){
+      
+
       console.log("Application for Jury wasn't success");
     })
   })
@@ -378,8 +396,10 @@ window.selectJury = function() {
   let id = $('#project_id').val();
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.selectJury(id,{gas: 1400000, from: web3.eth.accounts[0]})
-    .then(function(){
+    .then(function(res){
+
       console.log("Jury Selection Done");
+      console.log(res);
     })
     .catch(function(){
       console.log("Jury Selection - Error !!");
@@ -388,13 +408,13 @@ window.selectJury = function() {
 }
 
 window.voteJury = function(form) {
-  let id = $('#project_id').val();
+  let id = $('#project__id').val();
   let vote = $('#vote').val();
   let salt = $('#salt').val();
   let hash = web3.sha3(vote.toString()+salt)
-
+console.log(id,hash);
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.acceptProject(id,hash,{gas: 1400000, from: web3.eth.accounts[0]})
+    contractInstance.voteJury(id,hash,{gas: 1400000, from: web3.eth.accounts[0]})
     .then(function(){
       console.log("Voting Done");
     })
@@ -406,11 +426,11 @@ window.voteJury = function(form) {
 
 
 window.verifyJury = function(form) {
-  let id = $('#project_id').val();
-  let vote = $('#vote').val();
-  let salt = $('#salt').val();
+  let id = $('#project__id_').val();
+  let vote = $('#vote_').val();
+  let salt = $('#salt_').val();
   let hash = web3.sha3(vote.toString()+salt)
-
+  console.log(id,vote,hash);
 
   Freelancer.deployed().then(function(contractInstance){
     contractInstance.verifyJury(id,vote,hash,{gas: 1400000, from: web3.eth.accounts[0]})
@@ -425,9 +445,10 @@ window.verifyJury = function(form) {
 
 
 window.redistributeFunds = function() {
-  let id = $('#project_id').val();
+  let id = $('#project__id').val();
+  console.log(id);
   Freelancer.deployed().then(function(contractInstance){
-    contractInstance.redistributeFunds(id,{gas: 1400000, from: web3.eth.accounts[0]})
+    contractInstance.redistributeFunds(id,{gas: 4400000, from: web3.eth.accounts[0]})
     .then(function(){
       console.log("Funds distributed !!");
     })
